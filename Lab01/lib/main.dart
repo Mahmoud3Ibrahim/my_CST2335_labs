@@ -36,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var _oimage = "images/question-mark.png";
   var _limage = "images/idea.png";
   var _simage = "images/stop.png";
-
+  var _showPass = true;
   late TextEditingController _logincontroller;
   late TextEditingController _passcontroller;
 
@@ -83,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
             TextField(
               controller: _passcontroller,
-              obscureText: true,
+              obscureText: _showPass,
               style: TextStyle(color: Colors.black),
               decoration: InputDecoration(
                 hintText: "  password",
@@ -92,17 +92,28 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
             ElevatedButton(
-          onPressed: () {
-            String _password = _passcontroller.text;
-            setState(() {
-              if ( _password == "QWERTY123" ){
-                _oimage = _limage;
-              } else {
-                _oimage = _simage;
-              }
-            });
-          },
-          child:  Text("Login"),  ),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 12),
+
+              ),
+              onPressed: () {
+                String _password = _passcontroller.text;
+                setState(() {
+                  if ( _password == "QWERTY123" ){
+                    _oimage = _limage;
+                    _showPass = false;
+                  } else {
+                    _oimage = _simage;
+                    _showPass = false;
+                  }
+                }
+                );
+              },
+              child:  Text("Login" , style: TextStyle(
+                color: Colors.blueAccent,
+                fontSize: 18,
+              ), ) ,
+            ),
 
             Image.asset(_oimage , width: 300, height: 300,),
 
