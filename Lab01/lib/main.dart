@@ -117,8 +117,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
             Image.asset(_oimage , width: 300, height: 300,),
 
-
-
           ],
         ),
       ),
