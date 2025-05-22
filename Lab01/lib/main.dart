@@ -11,9 +11,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+
       ),
       home: MyHomePage(title: 'Browse Page'), // ← ربط الصفحة هنا
     );
@@ -39,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Text(
               "BROWSE CATEGORIES",
@@ -49,9 +52,20 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(height: 16),
             Text(
               "Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories.",
-              textAlign: TextAlign.center,
-            ),
-          ],
+              textAlign: TextAlign.start,),
+              Text( "By Meat" , textAlign: TextAlign.center, style: TextStyle(fontSize: 20.0),
+              ),
+            Row( 
+              children: [
+                Image.asset()
+                
+              ],
+
+
+            )
+
+  ],
+
         ),
       ),
     );
