@@ -44,27 +44,77 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
+
             Text(
               "BROWSE CATEGORIES",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 40.0),
             ),
-            SizedBox(height: 16),
             Text(
               "Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories.",
               textAlign: TextAlign.start,),
+
               Text( "By Meat" , textAlign: TextAlign.center, style: TextStyle(fontSize: 20.0),
               ),
-            Row( 
+
+            Row(
               children: [
-                Image.asset()
-                
-              ],
+                CircleAvatar (
+                    backgroundImage: AssetImage('images/beef.jpeg'), radius:50),
+        CircleAvatar (
+            backgroundImage: AssetImage('images/Chicken.jpg'), radius:50),
+        CircleAvatar (
+            backgroundImage: AssetImage('images/pork.jpg'), radius:50),
+        CircleAvatar (
+            backgroundImage: AssetImage('images/Seafood.jpg'),radius:50),
+              ],),
 
 
-            )
+            Text( "By course",
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 18),
+            ),
+          Row(
+      children: [
+      CircleAvatar (
+      backgroundImage: AssetImage('images/MainDishes.jpg'),
+        radius:50),
+    CircleAvatar (
+    backgroundImage: AssetImage('images/Salad.jpg'),
+    radius:50),
+    CircleAvatar (
+    backgroundImage: AssetImage('images/SideDishes.jpg'),
+    radius:50),
+    CircleAvatar (
+    backgroundImage: AssetImage('images/Crockpot.jpg'),
+    radius:50),
+      ],),
 
-  ],
+
+            Text( "By DESSERT",
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 18),
+            ),
+            Row(
+              children: [
+                CircleAvatar (
+                    backgroundImage: AssetImage('images/MainDishes.jpg'),
+                    radius:50),
+                CircleAvatar (
+                    backgroundImage: AssetImage('images/Salad.jpg'),
+                    radius:50),
+                CircleAvatar (
+                    backgroundImage: AssetImage('images/SideDishes.jpg'),
+                    radius:50),
+                CircleAvatar (
+                    backgroundImage: AssetImage('images/Crockpot.jpg'),
+                    radius:50),
+              ],)
+
+
+
+
+
+
+            ,],
 
         ),
       ),
