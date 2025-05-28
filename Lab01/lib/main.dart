@@ -18,7 +18,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
 
       ),
-      home: MyHomePage(title: 'Browse Page'), // ← ربط الصفحة هنا
+      home: MyHomePage(title: "",),
+
     );
   }
 }
@@ -36,10 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
+
       body: Center(
       child: Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Column(
+           Stack( alignment: Alignment.bottomCenter,
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/MainDishes.jpg'),
@@ -125,14 +123,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text("Main Dishes"),
               ],
             ),
-            Column(
+            Stack( alignment: Alignment.bottomCenter,
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/Salad.jpg'), radius: 50),
                 Text("Salad"),
               ],
             ),
-            Column(
+            Stack( alignment: Alignment.bottomCenter,
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/SlideDishes.jpg'),
@@ -140,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text("Side Dishes"),
               ],
             ),
-            Column(
+            Stack( alignment: Alignment.bottomCenter,
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/Crockpot.jpg'),
@@ -159,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Column(
+            Stack( alignment: Alignment.bottomCenter,
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/iceCream.jpg'),
@@ -167,14 +165,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text("ice Cream"),
               ],
             ),
-            Column(
+            Stack( alignment: Alignment.bottomCenter,
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/Brownies.jpg'), radius: 50),
                 Text("Brownies"),
               ],
             ),
-            Column(
+            Stack( alignment: Alignment.bottomCenter,
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/Pies.jpg'),
@@ -182,7 +180,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text("Pies"),
               ],
             ),
-            Column(
+            Stack( alignment: Alignment.bottomCenter,
+
               children: [
                 CircleAvatar(
                     backgroundImage: AssetImage('images/Cookies.jpg'),
