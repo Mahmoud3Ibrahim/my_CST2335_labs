@@ -53,10 +53,17 @@ class _MyHomePageState extends State<MyHomePage> {
       String? savedUser = await encryptedPrefs.getString('username');
       String? savedPass = await encryptedPrefs.getString('password');
 
-      if (savedUser != null && savedPass != null) {
+
+      if (savedUser != null && savedPass != null &&
+          savedUser.isNotEmpty && savedPass.isNotEmpty)
+        {
+        const snackBar = SnackBar( content: Text('your password and useername saved') );
+
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
         _logincontroller.text = savedUser;
         _passcontroller.text = savedPass;
       }
+
     });
   }
 
@@ -127,6 +134,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () async {
                           final encryptedPrefs = EncryptedSharedPreferences();
                           await encryptedPrefs.clear();
+                          _logincontroller.clear();
+                          _passcontroller.clear();
                           Navigator.pop(context);
                         },
                         child: const Text('No'),
