@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,7 +33,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-
+// adding the photos unde login code.
   var _oimage = "images/question-mark.png";
   var _limage = "images/idea.png";
   var _simage = "images/stop.png";
@@ -45,9 +46,19 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _logincontroller = TextEditingController();
     _passcontroller  = TextEditingController();
+
+// calling the saved used username and password
+    Future.delayed(Duration.zero, () async {
+      final encryptedPrefs = EncryptedSharedPreferences();
+      String? savedUser = await encryptedPrefs.getString('username');
+      String? savedPass = await encryptedPrefs.getString('password');
+
+      if (savedUser != null && savedPass != null) {
+        _logincontroller.text = savedUser;
+        _passcontroller.text = savedPass;
+      }
+    });
   }
-
-
 
   @override
   void dispose() {
@@ -55,9 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _passcontroller.dispose();
     super.dispose();
   }
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,26 +103,36 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   if ( _password == "QWERTY123" ){
                     _oimage = _limage;
-                    _showPass = false;
-                    showDialog<String>(
-                      context: context,
-                      builder: (BuildContext context) => AlertDialog(
-                        title: const Text('AlertDialog Title'),
-                        content: const Text('AlertDialog description'),
-                        actions: <Widget>[
-                          TextButton(
-                          onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),),
-
-                  ],
-                      ),
-                    );
-
                   } else {
                     _oimage = _simage;
-                    _showPass = false;
                   }
-                }
+                });
+                  showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Save Password'),
+                    content: const Text('Do you want to Save Your UserName And Password?'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () async {
+                          final encryptedPrefs = EncryptedSharedPreferences(); // new object to encruptyd the password
+                          await encryptedPrefs.setString('username', _logincontroller.text); // wait until the user enter user name and password
+                          await encryptedPrefs.setString('password', _passcontroller.text);
+
+                          Navigator.pop(context); // after that appear
+                        },
+                        child: const Text('Yes'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          final encryptedPrefs = EncryptedSharedPreferences();
+                          await encryptedPrefs.clear();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('No'),
+                      ),
+                    ],
+                  ),
                 );
               },
               child:  Text("Login" , style: TextStyle(
