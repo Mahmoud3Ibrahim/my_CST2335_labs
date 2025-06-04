@@ -56,13 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +96,20 @@ class _MyHomePageState extends State<MyHomePage> {
                   if ( _password == "QWERTY123" ){
                     _oimage = _limage;
                     _showPass = false;
+                    showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        title: const Text('AlertDialog Title'),
+                        content: const Text('AlertDialog description'),
+                        actions: <Widget>[
+                          TextButton(
+                          onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),),
+
+                  ],
+                      ),
+                    );
+
                   } else {
                     _oimage = _simage;
                     _showPass = false;
@@ -119,11 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
