@@ -58,7 +58,6 @@ class _MyHomePageState extends State<MyHomePage> {
           savedUser.isNotEmpty && savedPass.isNotEmpty)
         {
         const snackBar = SnackBar( content: Text('your password and useername saved') );
-
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         _logincontroller.text = savedUser;
         _passcontroller.text = savedPass;
@@ -126,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           await encryptedPrefs.setString('username', _logincontroller.text); // wait until the user enter user name and password
                           await encryptedPrefs.setString('password', _passcontroller.text);
 
-                          Navigator.pop(context); // after that appear
+                          Navigator.pop(context); // after that the message will disappear
                         },
                         child: const Text('Yes'),
                       ),
