@@ -70,7 +70,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: TextField(
                     controller: _itemController,
                     decoration: const InputDecoration(
-                      hintText: 'Item', // Hint for item name
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -80,7 +79,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: TextField(
                     controller: _qtyController,
                     decoration: const InputDecoration(
-                      hintText: 'Qty', // Hint for quantity
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
@@ -105,47 +103,69 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
             Expanded(
-              child: _items.isEmpty
-                  ? const Center(child: Text('There are no items in the list')) // Empty state
-                  : ListView.builder(
-                itemCount: _items.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onLongPress: () {
-                      // Show confirmation dialog before delete
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Delete this item?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () async {
-                                  await dao.deleteItem(_items[index]); // Delete from DB
-                                  _items = await dao.findAllItems(); // Refresh list
-                                  Navigator.of(context).pop();
-                                  setState(() {});
-                                },
-                                child: const Text('Yes'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('No'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: ListTile(
-                      title: Text('${index + 1}: ${_items[index].name} - quantity: ${_items[index].qty}'), // Show item
-                    ),
-                  );
+              child: Builder(
+                builder: (context) {
+                  // Check if the list is empty
+                  if (_items.isEmpty) {
+                    // Show a message in the center if there are no items
+                    return const Center(
+                      child: Text('There are no items in the list'),
+                    );
+                  } else {
+                    // If there are items, display them in a scrollable list
+                    return ListView.builder(
+                      itemCount: _items.length, // Number of items to display
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onLongPress: () {
+                            // Show a confirmation dialog when user long-presses an item
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Delete this item?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () async {
+                                        // Delete the item from the database
+                                        await dao.deleteItem(_items[index]);
+
+                                        // Reload the updated list of items
+                                        _items = await dao.findAllItems();
+
+                                        // Close the dialog
+                                        Navigator.of(context).pop();
+
+                                        // Update the screen with new list
+                                        setState(() {});
+                                      },
+                                      child: const Text('Yes'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        // Close the dialog without doing anything
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('No'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: ListTile(
+                            // Show the item name and quantity with numbering
+                            title: Text(
+                              '${index + 1}: ${_items[index].name} - quantity: ${_items[index].qty}',
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
                 },
               ),
-            ),
+            )
           ],
         ),
       ),
