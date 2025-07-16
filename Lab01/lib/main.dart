@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'database.dart';
+import 'to_do_item.dart';
+import 'to_do_dao.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MyApp()); // Start the app
 }
 
 class MyApp extends StatelessWidget {
@@ -11,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Shopping List',
-      home: const MyHomePage(),
+      home: const MyHomePage(), // Go to home page
     );
   }
 }
@@ -24,18 +27,41 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController _itemController = TextEditingController(); // controller for item
-  final TextEditingController _qtyController = TextEditingController(); // controller for qty
-  final List<String> _items = []; // list to hold items
+  final TextEditingController _itemController = TextEditingController(); // Controller for item name
+  final TextEditingController _qtyController = TextEditingController(); // Controller for quantity
+
+  late AppDatabase database; // Our Floor database
+  late ToDoDao dao; // Our DAO
+  List<ToDoItem> _items = []; // List of items
+
+  @override
+  void initState() {
+    super.initState();
+    setupDatabase(); // Load data when app starts
+  }
+
+  Future<void> setupDatabase() async {
+    database = await $FloorAppDatabase.databaseBuilder('todo.db').build(); // Create database
+    dao = database.toDoDao; // Get DAO
+    _items = await dao.findAllItems(); // Load saved items
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _itemController.dispose(); // Clean up
+    _qtyController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shopping List'), // title
+        title: const Text('Shopping List'), // Title
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8), // small padding around content
+        padding: const EdgeInsets.all(8), // Padding around content
         child: Column(
           children: [
             Row(
@@ -44,47 +70,49 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: TextField(
                     controller: _itemController,
                     decoration: const InputDecoration(
-                      hintText: 'Item', // placeholder text
-                      border: OutlineInputBorder(), // simple border
+                      hintText: 'Item', // Hint for item name
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(width: 8), // simple space between fields
+                const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _qtyController,
                     decoration: const InputDecoration(
-                      hintText: 'Qty', // placeholder for qty
-                      border: OutlineInputBorder(), // simple border
+                      hintText: 'Qty', // Hint for quantity
+                      border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                SizedBox(width: 8), // simple space before button
+                const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     String item = _itemController.text;
                     String qty = _qtyController.text;
-                    if (item != '' && qty != '') {
-                      setState(() {
-                        _items.add('$item  quantity: $qty');
-                        _itemController.clear();
-                        _qtyController.clear();
-                      });
+                    if (item.isNotEmpty && qty.isNotEmpty) {
+                      final newItem = ToDoItem(name: item, qty: qty); // Create new item
+                      await dao.insertItem(newItem); // Save to database
+                      _items = await dao.findAllItems(); // Reload items
+                      _itemController.clear(); // Clear input
+                      _qtyController.clear();
+                      setState(() {});
                     }
                   },
-                  child: const Text('Add'),
+                  child: const Text('Add'), // Button text
                 ),
               ],
             ),
             Expanded(
               child: _items.isEmpty
-                  ? const Center(child: Text('There are no items in the list'))
+                  ? const Center(child: Text('There are no items in the list')) // Empty state
                   : ListView.builder(
                 itemCount: _items.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onLongPress: () {
+                      // Show confirmation dialog before delete
                       showDialog(
                         context: context,
                         builder: (context) {
@@ -92,11 +120,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             title: const Text('Delete this item?'),
                             actions: [
                               TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _items.removeAt(index);
-                                  });
+                                onPressed: () async {
+                                  await dao.deleteItem(_items[index]); // Delete from DB
+                                  _items = await dao.findAllItems(); // Refresh list
                                   Navigator.of(context).pop();
+                                  setState(() {});
                                 },
                                 child: const Text('Yes'),
                               ),
@@ -112,8 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                     },
                     child: ListTile(
-                      title: Text('${index + 1}: ${_items[index]}'),
-
+                      title: Text('${index + 1}: ${_items[index].name} - quantity: ${_items[index].qty}'), // Show item
                     ),
                   );
                 },
