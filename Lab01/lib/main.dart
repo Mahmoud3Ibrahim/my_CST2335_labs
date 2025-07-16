@@ -1,122 +1,175 @@
 import 'package:flutter/material.dart';
+import 'database.dart';
+import 'to_do_item.dart';
+import 'to_do_dao.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MyApp()); // Start the app
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Shopping List',
+      home: const MyHomePage(), // Go to home page
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final TextEditingController _itemController = TextEditingController(); // Controller for item name
+  final TextEditingController _qtyController = TextEditingController(); // Controller for quantity
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  late AppDatabase database; // Our Floor database
+  late ToDoDao dao; // Our DAO
+  List<ToDoItem> _items = []; // List of items
+
+  @override
+  void initState() {
+    super.initState();
+    setupDatabase(); // Load data when app starts
+  }
+
+  Future<void> setupDatabase() async {
+    database = await $FloorAppDatabase.databaseBuilder('todo.db').build(); // Create database
+    dao = database.toDoDao; // Get DAO
+    _items = await dao.findAllItems(); // Load saved items
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _itemController.dispose(); // Clean up
+    _qtyController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Shopping List'), // Title
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(8), // Padding around content
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _itemController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _qtyController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () async {
+                    String item = _itemController.text;
+                    String qty = _qtyController.text;
+                    if (item.isNotEmpty && qty.isNotEmpty) {
+                      final newItem = ToDoItem(name: item, qty: qty); // Create new item
+                      await dao.insertItem(newItem); // Save to database
+                      _items = await dao.findAllItems(); // Reload items
+                      _itemController.clear(); // Clear input
+                      _qtyController.clear();
+                      setState(() {});
+                    }
+                  },
+                  child: const Text('Add'), // Button text
+                ),
+              ],
             ),
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  // Check if the list is empty
+                  if (_items.isEmpty) {
+                    // Show a message in the center if there are no items
+                    return const Center(
+                      child: Text('There are no items in the list'),
+                    );
+                  } else {
+                    // If there are items, display them in a scrollable list
+                    return ListView.builder(
+                      itemCount: _items.length, // Number of items to display
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onLongPress: () {
+                            // Show a confirmation dialog when user long-presses an item
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Delete this item?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () async {
+
+                                        // Delete the item from the database
+                                        await dao.deleteItem(_items[index]);
+
+                                        // Reload the updated list of items
+                                        _items = await dao.findAllItems();
+
+                                        // Close the dialog
+                                        Navigator.of(context).pop();
+
+                                        // Update the screen with new list
+                                        setState(() {});
+                                      },
+                                      child: const Text('Yes'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        // Close the dialog without doing anything
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('No'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: ListTile(
+                            // Show the item name and quantity with numbering
+                            title: Text(
+                              '${index + 1}: ${_items[index].name} - quantity: ${_items[index].qty}',
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            )
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
