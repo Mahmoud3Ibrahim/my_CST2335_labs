@@ -127,6 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   actions: [
                                     TextButton(
                                       onPressed: () async {
+
                                         // Delete the item from the database
                                         await dao.deleteItem(_items[index]);
 
