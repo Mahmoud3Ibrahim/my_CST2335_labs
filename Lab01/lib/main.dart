@@ -33,6 +33,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late AppDatabase database; // Our Floor database
   late ToDoDao dao; // Our DAO
   List<ToDoItem> _items = []; // List of items
+  ToDoItem? _selectedItem; // Currently selected item
 
   @override
   void initState() {
@@ -45,6 +46,23 @@ class _MyHomePageState extends State<MyHomePage> {
     dao = database.toDoDao; // Get DAO
     _items = await dao.findAllItems(); // Load saved items
     setState(() {});
+  }
+
+  // Delete selected item
+  void _deleteItem() async {
+    if (_selectedItem != null) {
+      await dao.deleteItem(_selectedItem!);
+      _items = await dao.findAllItems();
+      _selectedItem = null;
+      setState(() {});
+    }
+  }
+
+  // Close details
+  void _closeDetails() {
+    setState(() {
+      _selectedItem = null;
+    });
   }
 
   @override
@@ -60,115 +78,144 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('Shopping List'), // Title
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8), // Padding around content
-        child: Column(
-          children: [
-            Row(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Check if wide screen (tablet/desktop)
+          if (constraints.maxWidth > 600) {
+            // Wide screen - show list and details side by side
+            return Row(
               children: [
+                // Left side - List
                 Expanded(
-                  child: TextField(
-                    controller: _itemController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                  child: _buildListView(),
                 ),
-                const SizedBox(width: 8),
+                // Right side - Details
                 Expanded(
-                  child: TextField(
-                    controller: _qtyController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () async {
-                    String item = _itemController.text;
-                    String qty = _qtyController.text;
-                    if (item.isNotEmpty && qty.isNotEmpty) {
-                      final newItem = ToDoItem(name: item, qty: qty); // Create new item
-                      await dao.insertItem(newItem); // Save to database
-                      _items = await dao.findAllItems(); // Reload items
-                      _itemController.clear(); // Clear input
-                      _qtyController.clear();
-                      setState(() {});
-                    }
-                  },
-                  child: const Text('Add'), // Button text
+                  child: _buildDetailsView(),
                 ),
               ],
-            ),
-            Expanded(
-              child: Builder(
-                builder: (context) {
-                  // Check if the list is empty
-                  if (_items.isEmpty) {
-                    // Show a message in the center if there are no items
-                    return const Center(
-                      child: Text('There are no items in the list'),
-                    );
-                  } else {
-                    // If there are items, display them in a scrollable list
-                    return ListView.builder(
-                      itemCount: _items.length, // Number of items to display
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onLongPress: () {
-                            // Show a confirmation dialog when user long-presses an item
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text('Delete this item?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () async {
+            );
+          } else {
+            // Narrow screen (phone) - show either list or details
+            if (_selectedItem != null) {
+              return _buildDetailsView(); // Show details only
+            } else {
+              return _buildListView(); // Show list only
+            }
+          }
+        },
+      ),
+    );
+  }
 
-                                        // Delete the item from the database
-                                        await dao.deleteItem(_items[index]);
-
-                                        // Reload the updated list of items
-                                        _items = await dao.findAllItems();
-
-                                        // Close the dialog
-                                        Navigator.of(context).pop();
-
-                                        // Update the screen with new list
-                                        setState(() {});
-                                      },
-                                      child: const Text('Yes'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        // Close the dialog without doing anything
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('No'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          child: ListTile(
-                            // Show the item name and quantity with numbering
-                            title: Text(
-                              '${index + 1}: ${_items[index].name} - quantity: ${_items[index].qty}',
-                            ),
-                          ),
-                        );
-                      },
-                    );
+  // Build the list view
+  Widget _buildListView() {
+    return Padding(
+      padding: const EdgeInsets.all(8), // Padding around content
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _itemController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _qtyController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () async {
+                  String item = _itemController.text;
+                  String qty = _qtyController.text;
+                  if (item.isNotEmpty && qty.isNotEmpty) {
+                    final newItem = ToDoItem(name: item, qty: qty); // Create new item
+                    await dao.insertItem(newItem); // Save to database
+                    _items = await dao.findAllItems(); // Reload items
+                    _itemController.clear(); // Clear input
+                    _qtyController.clear();
+                    setState(() {});
                   }
                 },
+                child: const Text('Add'), // Button text
               ),
-            )
-          ],
-        ),
+            ],
+          ),
+          Expanded(
+            child: Builder(
+              builder: (context) {
+                // Check if the list is empty
+                if (_items.isEmpty) {
+                  // Show a message in the center if there are no items
+                  return const Center(
+                    child: Text('There are no items in the list'),
+                  );
+                } else {
+                  // If there are items, display them in a scrollable list
+                  return ListView.builder(
+                    itemCount: _items.length, // Number of items to display
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        // Show the item name and quantity with numbering
+                        title: Text(
+                          '${index + 1}: ${_items[index].name} - quantity: ${_items[index].qty}',
+                        ),
+                        onTap: () {
+                          // Select item on tap
+                          setState(() {
+                            _selectedItem = _items[index];
+                          });
+                        },
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build the details view
+  Widget _buildDetailsView() {
+    if (_selectedItem == null) {
+      return const Center(
+        child: Text('Select an item to view details'),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Item name: ${_selectedItem!.name}'),
+          Text('Quantity: ${_selectedItem!.qty}'),
+          Text('Database id: ${_selectedItem!.id}'),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _deleteItem,
+            child: const Text('Delete'),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: _closeDetails,
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }
